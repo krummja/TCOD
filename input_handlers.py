@@ -1,6 +1,9 @@
 import tcod
 
+
+
 def handle_keys(key):
+
     if key.vk == tcod.KEY_UP:
         return {'move': (0, -1)}
     elif key.vk == tcod.KEY_DOWN:
@@ -17,3 +20,4 @@ def handle_keys(key):
         return {'exit': True}
     
     return {}
+
