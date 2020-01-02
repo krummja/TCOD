@@ -10,16 +10,20 @@ def render_all(con, entities, game_map, fov_map, fov_recompute, screen_width, sc
 
                 if visible:
                     if wall:
-                        tcod.console_set_char_background(con, x, y, colors.get('light_wall'), tcod.BKGND_SET)
+                        tcod.console_put_char(con, x, y, '#', tcod.BKGND_NONE)
+                        tcod.console_set_char_foreground(con, x, y, colors.get('light_wall'))
                     else:
-                        tcod.console_set_char_background(con, x, y, colors.get('light_ground'), tcod.BKGND_SET)
+                        tcod.console_put_char(con, x, y, '.', tcod.BKGND_NONE)
+                        tcod.console_set_char_foreground(con, x, y, colors.get('light_ground'))
                     
                     game_map.tiles[x][y].explored = True
                 elif game_map.tiles[x][y].explored:
                     if wall:
-                        tcod.console_set_char_background(con, x, y, colors.get('dark_wall'), tcod.BKGND_SET)
+                        tcod.console_put_char(con, x, y, '#', tcod.BKGND_NONE)
+                        tcod.console_set_char_foreground(con, x, y, colors.get('dark_wall'))
                     else:
-                        tcod.console_set_char_background(con, x, y, colors.get('dark_ground'), tcod.BKGND_SET)
+                        tcod.console_put_char(con, x, y, '.', tcod.BKGND_NONE)
+                        tcod.console_set_char_foreground(con, x, y, colors.get('dark_ground'))
     
     for entity in entities:
         draw_entity(con, entity, fov_map)

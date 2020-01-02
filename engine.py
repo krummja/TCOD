@@ -32,6 +32,7 @@ def main():
     }
 
     #* Entity Variables
+    # TODO Store this information in JSON
     player = Entity(int(screen_width / 2), int(screen_height / 2), '@', tcod.white)
     npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), '@', tcod.yellow)
     entities = [npc, player]
