@@ -11,11 +11,13 @@ from render_functions import clear_all, render_all
 
 def main():
 
-#* Root Console Configuration
+#! Configurations
+
+  #* Root Console Configuration
     screen_width = 80
     screen_height = 50
 
-#* World and FOV Configuration
+  #* World and FOV Configuration
     map_width = 80
     map_height = 45
 
@@ -36,31 +38,35 @@ def main():
         'light_ground': tcod.Color(200, 180, 50)
     }
 
-#* Entity Configuration
+  #* Entity Configuration
     player = Entity(0, 0, '@', tcod.white, 'Player', blocks=True)
     entities = [player]
 
-#* Root Console Initialization
+#! Initializations
+
+  #* Root Console Initialization
     tcod.console_set_custom_font('./assets/arial10x10.png', tcod.FONT_TYPE_GRAYSCALE | tcod.FONT_LAYOUT_TCOD)
     tcod.console_init_root(screen_width, screen_height, 'tcod tutorial', False)
 
     con = tcod.console_new(screen_width, screen_height)
 
-#* World and FOV Initialization
+  #* World and FOV Initialization
     game_map = GameMap(map_width, map_height)
     game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, max_monsters_per_room)
 
     fov_recompute = True
     fov_map = initialize_fov(game_map)
 
-#* Control Variable Initialization
+  #* Control Variable Initialization
     key = tcod.Key()
     mouse = tcod.Mouse()
 
-#* Game State
+#! Game State
+
     game_state = GameStates.PLAYERS_TURN
 
-#* Main Game Loop
+#! Main Game Loop
+
     while not tcod.console_is_window_closed():
     
     #* Event Checker
@@ -125,7 +131,7 @@ def main():
         # After Player block, yield turn to Enemy
                 game_state = GameStates.ENEMY_TURN
 
-#* Alright, fire it up!
+#! Alright, fire it up!
 if __name__ == '__main__':
     main()
 
