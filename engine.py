@@ -2,23 +2,20 @@ import sys
 import tcod
 
 from components.fighter import Fighter
+from death_functions import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
 from input_handlers import handle_keys
 from map_objects.game_map import GameMap
-from render_functions import clear_all, render_all
+from render_functions import clear_all, render_all, RenderOrder
 
 
 def main():
 
-#! Configurations
-
-  #* Root Console Configuration
     screen_width = 80
     screen_height = 50
 
-  #* World and FOV Configuration
     map_width = 80
     map_height = 45
 
@@ -39,83 +36,54 @@ def main():
         'light_ground': tcod.Color(200, 180, 50)
     }
 
-  #* Entity Configuration
     fighter_component = Fighter(hp=30, defense=2, power=5)
-    player = Entity(0, 0, '@', tcod.white, 'Player', blocks=True, fighter=fighter_component)
+    player = Entity(0, 0, '@', tcod.white, 'Player', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component)
 
     entities = [player]
 
-#! Initializations
-
-  #* Root Console Initialization
     tcod.console_set_custom_font('./assets/arial10x10.png', tcod.FONT_TYPE_GRAYSCALE | tcod.FONT_LAYOUT_TCOD)
     tcod.console_init_root(screen_width, screen_height, 'tcod tutorial', False)
 
     con = tcod.console_new(screen_width, screen_height)
 
-  #* World and FOV Initialization
     game_map = GameMap(map_width, map_height)
     game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, max_monsters_per_room)
 
     fov_recompute = True
     fov_map = initialize_fov(game_map)
 
-  #* Control Variable Initialization
     key = tcod.Key()
     mouse = tcod.Mouse()
 
-#! Game State
-
     game_state = GameStates.PLAYERS_TURN
-
-#! Main Game Loop
 
     while not tcod.console_is_window_closed():
     
-    #* Event Checker
         tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS, key, mouse)
 
-    #* CLI FPS Counter
         curr_fps = tcod.sys_get_fps()
         for x in range(10):
             print('   FPS: ' + str(curr_fps), end='\r')
 
-    #* Frame Loop
         if fov_recompute:
             recompute_fov(fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm)
 
-        render_all(con, entities, game_map, fov_map, fov_recompute, screen_width, screen_height, colors)
+        render_all(con, entities, player, game_map, fov_map, fov_recompute, screen_width, screen_height, colors)
+
         fov_recompute = False
 
         tcod.console_flush()
+
         clear_all(con, entities)
 
-    #* Input Functions
         action = handle_keys(key)
 
+        move = action.get('move')
         exit = action.get('exit')
         fullscreen = action.get('fullscreen')
-        move = action.get('move')
 
-    #* Control Logic
+        player_turn_results = []
 
-        #* Client 
-        if exit:
-            return True
-        if fullscreen:
-            tcod.console_set_fullscreen(not tcod.console_is_fullscreen())
-
-        #* Game States
-        # Process Enemy Turn
-        if game_state == GameStates.ENEMY_TURN:
-            for entity in entities:
-                if entity.ai:
-                    entity.ai.take_turn(player, fov_map, game_map, entities)
-
-        # After Enemy turn, yield turn to Player
-            game_state = GameStates.PLAYERS_TURN
-
-        # Start the turn by processing Player input
         if move and game_state == GameStates.PLAYERS_TURN:
             dx, dy = move
             destination_x = player.x + dx
@@ -125,16 +93,65 @@ def main():
                 target = get_blocking_entities_at_location(entities, destination_x, destination_y)
 
                 if target:
-                    print('You kick the ' + target.name + ' in the shins!')
+                    attack_results = player.fighter.attack(target)
+                    player_turn_results.extend(attack_results)
                 else:
                     player.move(dx, dy)
 
                     fov_recompute = True
                 
-        # After Player block, yield turn to Enemy
                 game_state = GameStates.ENEMY_TURN
 
-#! Alright, fire it up!
+        if exit:
+            return True
+            
+        if fullscreen:
+            tcod.console_set_fullscreen(not tcod.console_is_fullscreen())
+
+        for player_turn_result in player_turn_results:
+            message = player_turn_result.get('message')
+            dead_entity = player_turn_result.get('dead')
+
+            if message:
+                print(message)
+            
+            if dead_entity:
+                if dead_entity == player:
+                    message, game_state = kill_player(dead_entity)
+                else:
+                    message = kill_monster(dead_entity)
+                
+                print(message)
+
+        if game_state == GameStates.ENEMY_TURN:
+            for entity in entities:
+                if entity.ai:
+                    enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
+
+                    for enemy_turn_result in enemy_turn_results:
+                        message = enemy_turn_result.get('message')
+                        dead_entity = enemy_turn_result.get('dead')
+                    
+                        if message:
+                            print(message)
+                        
+                        if dead_entity:
+                            if dead_entity == player:
+                                message, game_state = kill_player(dead_entity)
+                            else:
+                                message = kill_monster(dead_entity)
+                            
+                            print(message)
+                        
+                            if game_state == GameStates.PLAYER_DEAD:
+                                break
+
+                    if game_state == GameStates.PLAYER_DEAD:
+                        break
+
+            else:
+                game_state = GameStates.PLAYERS_TURN
+
 if __name__ == '__main__':
     main()
 

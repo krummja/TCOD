@@ -9,7 +9,7 @@ from entity import Entity
 
 from map_objects.rectangle import Rect
 from map_objects.tile import Tile
-
+from render_functions import RenderOrder
 
 class GameMap:
 
@@ -94,11 +94,11 @@ class GameMap:
                 if randint(0, 100) < 80:
                     fighter_component = Fighter(hp=10, defense=0, power=3)
                     ai_component = BasicMonster()
-                    monster = Entity(x, y, 'o', tcod.desaturated_green, 'Orc', blocks=True, fighter=fighter_component, ai=ai_component)
+                    monster = Entity(x, y, 'o', tcod.desaturated_green, 'Orc', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
                 else:
                     fighter_component = Fighter(hp=16, defense=1, power=4)
                     ai_component = BasicMonster()
-                    monster = Entity(x, y, 'T', tcod.darker_green, 'Trogg', blocks=True, fighter=fighter_component, ai=ai_component)
+                    monster = Entity(x, y, 'T', tcod.darker_green, 'Trogg', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
                 
                 entities.append(monster)
 
