@@ -1,6 +1,7 @@
 import sys
 import tcod
 
+from components.fighter import Fighter
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
@@ -39,7 +40,9 @@ def main():
     }
 
   #* Entity Configuration
-    player = Entity(0, 0, '@', tcod.white, 'Player', blocks=True)
+    fighter_component = Fighter(hp=30, defense=2, power=5)
+    player = Entity(0, 0, '@', tcod.white, 'Player', blocks=True, fighter=fighter_component)
+
     entities = [player]
 
 #! Initializations
@@ -105,9 +108,9 @@ def main():
         #* Game States
         # Process Enemy Turn
         if game_state == GameStates.ENEMY_TURN:
-            # for entity in entities:
-            #     if entity != player:
-            #         print('The ' + entity.name + ' ponders existence.')
+            for entity in entities:
+                if entity.ai:
+                    entity.ai.take_turn(player, fov_map, game_map, entities)
 
         # After Enemy turn, yield turn to Player
             game_state = GameStates.PLAYERS_TURN
