@@ -14,8 +14,8 @@ from render_functions import clear_all, render_all, RenderOrder
 
 def main():
 
-    screen_width = 80
-    screen_height = 50
+    screen_width = 100
+    screen_height = 75
 
     bar_width = 20
     panel_height = 7
@@ -71,7 +71,7 @@ def main():
 
     while not tcod.console_is_window_closed():
     
-        tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS, key, mouse)
+        tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse)
 
         curr_fps = tcod.sys_get_fps()
         for x in range(10):
@@ -80,7 +80,7 @@ def main():
         if fov_recompute:
             recompute_fov(fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm)
 
-        render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, message_log, screen_width, screen_height, bar_width, panel_height, panel_y, colors)
+        render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, message_log, screen_width, screen_height, bar_width, panel_height, panel_y, mouse, colors)
 
         fov_recompute = False
 
