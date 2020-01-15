@@ -89,11 +89,10 @@ def main():
         render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, message_log, screen_width, screen_height, bar_width, panel_height, panel_y, mouse, colors, game_state)
 
         fov_recompute = False
-
         tcod.console_flush()
-
         clear_all(con, entities)
 
+    # Action Handlers
         action = handle_keys(key, game_state)
 
         move = action.get('move')
@@ -104,6 +103,7 @@ def main():
         exit = action.get('exit')
         fullscreen = action.get('fullscreen')
 
+    # Process Player Turn
         player_turn_results = []
 
         if move and game_state == GameStates.PLAYERS_TURN:
@@ -146,7 +146,7 @@ def main():
             item = player.inventory.items[inventory_index]
             
             if game_state == GameStates.SHOW_INVENTORY:
-                player_turn_results.extend(player.inventory.use(item))
+                player_turn_results.extend(player.inventory.use(item, entities=entities, fov_map=fov_map))
             elif game_state == GameStates.DROP_INVENTORY:
                 player_turn_results.extend(player.inventory.drop_item(item))
 
@@ -159,6 +159,7 @@ def main():
         if fullscreen:
             tcod.console_set_fullscreen(not tcod.console_is_fullscreen())
 
+        # Do something in response to player turn result
         for player_turn_result in player_turn_results:
             message = player_turn_result.get('message')
             dead_entity = player_turn_result.get('dead')
@@ -190,6 +191,7 @@ def main():
 
                 game_state = GameStates.ENEMY_TURN
 
+    # Process Enemy Turn
         if game_state == GameStates.ENEMY_TURN:
             for entity in entities:
                 if entity.ai:
