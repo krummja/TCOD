@@ -156,7 +156,7 @@ def main():
             elif game_state == GameStates.DROP_INVENTORY:
                 player_turn_results.extend(player.inventory.drop_item(item))
 
-        if game_state = GameStates.TARGETING:
+        if game_state == GameStates.TARGETING:
             if left_click:
                 target_x, target_y = left_click
 
