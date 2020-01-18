@@ -11,6 +11,7 @@ class RenderOrder(Enum):
     ITEM = auto()
     ACTOR = auto()
 
+
 def get_names_under_mouse(mouse, entities, fov_map):
     (x, y) = (mouse.cx, mouse.cy)
 
@@ -19,6 +20,15 @@ def get_names_under_mouse(mouse, entities, fov_map):
     names = ', '.join(names)
 
     return names.capitalize()
+
+
+def targeting_area(mouse, game_state, fov_map):
+    (x, y) = (mouse.cx, mouse.cy)
+
+    if tcod.map_is_in_fov(fov_map, x, y) and game_state == GameStates.TARGETING:
+        tcod.console_set_default_foreground(con, tcod.orange)
+        tcod.console_put_char(con, x, y, '*', tcod.BKGND_NONE)
+
 
 def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_color):
     bar_width = int(float(value) / maximum * total_width)
@@ -34,7 +44,10 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
     tcod.console_print_ex(panel, int(x + total_width / 2), y, tcod.BKGND_NONE, tcod.CENTER,
                              '{0}: {1}/{2}'.format(name, value, maximum))
 
+
 def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, message_log, screen_width, screen_height, bar_width, panel_height, panel_y, mouse, colors, game_state):
+    
+    # Render Game Map
     if fov_recompute:
         for y in range(game_map.height):
             for x in range(game_map.width):
@@ -58,11 +71,13 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
                         tcod.console_put_char(con, x, y, '.', tcod.BKGND_NONE)
                         tcod.console_set_char_foreground(con, x, y, colors.get('dark_ground'))
     
+    # Render Entities
     entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
 
     for entity in entities_in_render_order:
         draw_entity(con, entity, fov_map)
 
+    # Render GUI
     tcod.console_set_default_foreground(con, tcod.white)
     tcod.console_print_ex(con, 1, screen_height - 2, tcod.BKGND_NONE, tcod.LEFT,
     'HP: {0:02}/{1:02}'.format(player.fighter.hp, player.fighter.max_hp))
@@ -105,7 +120,7 @@ def draw_entity(con, entity, fov_map):
     if tcod.map_is_in_fov(fov_map, entity.x, entity.y):
         tcod.console_set_default_foreground(con, entity.color)
         tcod.console_put_char(con, entity.x, entity.y, entity.char, tcod.BKGND_NONE)
-
+    
 
 def clear_entity(con, entity):
     tcod.console_put_char(con, entity.x, entity.y, ' ', tcod.BKGND_NONE)
